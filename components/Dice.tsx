@@ -12,7 +12,10 @@ type GLTFResult = GLTF & {
   };
 };
 
-export default function Dice(props: JSX.IntrinsicElements["group"]) {
+export default function Dice({
+  color = "#FFFFFF",
+  ...props
+}: JSX.IntrinsicElements["group"] & { color?: string }) {
   const { nodes, materials } = useGLTF(
     require("../assets/models/dice.glb")
   ) as GLTFResult;
@@ -23,6 +26,7 @@ export default function Dice(props: JSX.IntrinsicElements["group"]) {
         receiveShadow
         geometry={nodes.Object_2.geometry}
         material={materials["Scene_-_Root"]}
+        material-color={color}
         rotation={[-Math.PI, 0, 0]}
         scale={0.05}
       />
