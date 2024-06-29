@@ -1,22 +1,12 @@
 import Dice from "@/components/Dice";
 import DiceColorButton from "@/components/DiceColorButton";
+import { colors } from "@/constants/DiceColors";
 import { ContactShadows } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber/native";
 import { Suspense, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function HomeScreen() {
-  const colors = [
-    "#ffffff",
-    "#ffadad",
-    "#ffd6a5",
-    "#fdffb6",
-    "#caffbf",
-    "#9bf6ff",
-    "#a0c4ff",
-    "#bdb2ff",
-    "#ffc6ff",
-  ];
   const [diceColor, setDiceColor] = useState("#FFFFFF");
 
   return (
