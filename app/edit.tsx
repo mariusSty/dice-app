@@ -2,13 +2,40 @@ import Dice from "@/components/Dice";
 import DiceColorButton from "@/components/DiceColorButton";
 import { colors } from "@/constants/DiceColors";
 import { ContactShadows } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber/native";
+import { Gyroscope } from "expo-sensors";
+import { Subscription } from "expo-sensors/build/Pedometer";
 import { StatusBar } from "expo-status-bar";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
 
 export default function EditModalScreen() {
   const [diceColor, setDiceColor] = useState("#FFFFFF");
+  const [{ x, y }, setData] = useState({
+    x: 0,
+    y: 0,
+  });
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+
+  Gyroscope.setUpdateInterval(16);
+
+  const _subscribe = () => {
+    setSubscription(
+      Gyroscope.addListener((gyroscopeData) => {
+        setData(gyroscopeData);
+      })
+    );
+  };
+
+  const _unsubscribe = () => {
+    subscription && subscription.remove();
+    setSubscription(null);
+  };
+
+  useEffect(() => {
+    _subscribe();
+    return () => _unsubscribe();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -20,9 +47,15 @@ export default function EditModalScreen() {
         <directionalLight position={[0, 0, 1]} args={["white", 2]} />
         <directionalLight position={[0, 0, -1]} args={["white", 2]} />
         <Suspense>
-          <Dice color={diceColor} />
+          <Dice
+            isSensorEnabled
+            color={diceColor}
+            sensorX={x}
+            sensorY={y}
+            scale={0.07}
+          />
         </Suspense>
-        <ContactShadows position={[0, -0.5, 0]} />
+        <ContactShadows position={[0, -1.5, 0]} />
       </Canvas>
 
       <View style={styles.colorSwitcherContainer}>
