@@ -1,13 +1,16 @@
 import Dice from "@/components/Dice";
 import { ContactShadows } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber/native";
+import { router } from "expo-router";
 import { Suspense } from "react";
 import { StyleSheet } from "react-native";
 
 export default function DicePreview({ diceColor }: { diceColor: string }) {
-  console.log("render", diceColor);
   return (
-    <Canvas style={styles.canvasContainer}>
+    <Canvas
+      style={styles.canvasContainer}
+      onTouchStart={() => router.push("/edit")}
+    >
       <directionalLight position={[1, 0, 0]} args={["white", 2]} />
       <directionalLight position={[0, 1, 0]} args={["white", 2]} />
       <directionalLight position={[-1, 0, 0]} args={["white", 2]} />
