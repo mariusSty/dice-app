@@ -63,9 +63,16 @@ export default function EditModalScreen() {
           horizontal
           contentContainerStyle={styles.colorSwitcherScrollView}
         >
-          {colors.map((color) => (
-            <DiceColorButton key={color} color={color} onPress={setDiceColor} />
-          ))}
+          <View style={styles.diceColorButtonsContainer}>
+            {colors.map((color) => (
+              <DiceColorButton
+                key={color}
+                color={color}
+                selectedColor={diceColor}
+                onPress={setDiceColor}
+              />
+            ))}
+          </View>
         </ScrollView>
       </View>
       <StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
@@ -81,13 +88,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   colorSwitcherContainer: {
-    backgroundColor: "#99c1de",
+    marginBottom: 50,
   },
   colorSwitcherScrollView: {
+    paddingHorizontal: 50,
+  },
+  diceColorButtonsContainer: {
     padding: 30,
     gap: 30,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#99c1de",
+    borderRadius: 20,
   },
 });

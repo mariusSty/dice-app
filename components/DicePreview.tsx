@@ -18,7 +18,7 @@ export default function DicePreview({ diceColor }: { diceColor: string }) {
       <directionalLight position={[0, 0, 1]} args={["white", 2]} />
       <directionalLight position={[0, 0, -1]} args={["white", 2]} />
       <Suspense>
-        <Dice color={diceColor} scale={2.5} enableRotation />
+        <Dice color={diceColor} scale={0.13} enableRotation />
       </Suspense>
       <ContactShadows position={[0, -2, 0]} />
     </Canvas>
