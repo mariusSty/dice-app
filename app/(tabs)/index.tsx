@@ -1,11 +1,10 @@
-import { StyleSheet, View } from "react-native";
+import Tray from "@/components/Tray";
+import { FilamentScene } from "react-native-filament";
 
 export default function HomeScreen() {
-  return <View style={styles.container}></View>;
+  return (
+    <FilamentScene>
+      <Tray />
+    </FilamentScene>
+  );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
