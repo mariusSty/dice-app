@@ -2,6 +2,7 @@ import DicePreview from "@/components/DicePreview";
 import { Entypo } from "@expo/vector-icons";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import { FilamentScene } from "react-native-filament";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Settings() {
@@ -27,7 +28,10 @@ export default function Settings() {
               <Entypo name="cross" size={30} color="black" />
             </Pressable>
           )}
-          <DicePreview diceColor={color} />
+
+          <FilamentScene>
+            <DicePreview diceColor={color} />
+          </FilamentScene>
         </View>
       ))}
       <View style={styles.diceContainer}>
