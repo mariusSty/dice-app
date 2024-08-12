@@ -10,20 +10,23 @@ import {
 } from "react-native-filament";
 import { useSharedValue } from "react-native-worklets-core";
 
-export default function DicePreview({ diceColor }: { diceColor: string }) {
+export default function DicePreview() {
   const rotation = useSharedValue<Float3>([0, 0, 0]);
 
   const renderCallback: RenderCallback = useCallback(() => {
     "worklet";
-    const newY = rotation.value[1] + 0.0001;
-    rotation.value = [0, newY, 0];
+    rotation.value = [0, 0.01, 0];
   }, [rotation]);
 
   return (
     <FilamentView style={styles.container} renderCallback={renderCallback}>
       <DefaultLight />
       <Camera />
-      <Model source={require("../assets/models/dice.glb")} rotate={rotation} />
+      <Model
+        source={require("../assets/models/dice.glb")}
+        rotate={rotation}
+        transformToUnitCube
+      />
     </FilamentView>
   );
 }
