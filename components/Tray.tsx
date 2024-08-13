@@ -1,10 +1,11 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   BulletAPI,
   Camera,
   DefaultLight,
+  Entity,
   FilamentView,
-  getAssetFromModel,
+  Float3,
   RenderCallback,
   RigidBody,
   useBoxShape,
@@ -16,27 +17,28 @@ import {
 } from "react-native-filament";
 
 export default function Tray() {
-  const [rigidBody, setRigidBody] = useState<RigidBody>();
+  const initialPosition: Float3[] = [
+    [-0.5, 3, 0],
+    [0, 4, 0],
+    [0.5, 5, 0],
+  ];
   const world = useWorld(0, -9.8, 0);
   const { transformManager } = useFilamentContext();
-  const dice = useModel(require("../assets/models/dice.glb"));
+  const [dicesEntitiesWithRigidBody, setDicesEntitiesWithRigidBody] = useState<
+    {
+      entity: Entity;
+      rigidBody: RigidBody;
+    }[]
+  >([]);
 
-  const diceAsset = getAssetFromModel(dice);
-  const renderableEntities = useMemo(
-    () => diceAsset?.getRenderableEntities(),
-    [diceAsset]
-  );
+  // Dice
+  const dice = useModel(require("../assets/models/dice.glb"), {
+    instanceCount: 3,
+  });
+  const boxShape = useBoxShape(0.5, 0.5, 0.5);
+  boxShape.localScaling;
 
-  const [meshEntity, meshTransform] = useMemo(() => {
-    const entity = renderableEntities?.[0];
-    if (entity == null) {
-      return [];
-    }
-    const transform = transformManager.getTransform(entity);
-    transformManager.setEntityPosition(entity, [0, -1, 0], true);
-    return [entity, transform] as const;
-  }, [renderableEntities, transformManager]);
-
+  // Floor
   const floorShape = useStaticPlaneShape(0, 1, 0, 0);
   useRigidBody({
     mass: 0,
@@ -46,7 +48,31 @@ export default function Tray() {
     world,
     id: "floor",
   });
-  const boxShape = useBoxShape(0, 0, 0);
+
+  useEffect(() => {
+    if (dice.state === "loaded") {
+      const instances = dice.asset.getAssetInstances();
+      for (const [i, instance] of instances.entries()) {
+        const entity = instance.getRoot();
+        transformManager.setEntityPosition(entity, initialPosition[i], true);
+        const transform = transformManager.getTransform(entity);
+        const rigidBody = BulletAPI.createRigidBodyFromTransform(
+          1,
+          transform,
+          boxShape,
+          "dice",
+          undefined
+        );
+        rigidBody.activationState = "disable_deactivation";
+        rigidBody.setDamping(0.0, 0.5);
+        world.addRigidBody(rigidBody);
+        setDicesEntitiesWithRigidBody((prev) => [
+          ...prev,
+          { entity, rigidBody },
+        ]);
+      }
+    }
+  }, [dice.state]);
 
   const renderCallback: RenderCallback = useCallback(
     ({ passedSeconds, timeSinceLastFrame }) => {
@@ -56,32 +82,38 @@ export default function Tray() {
         return;
       }
 
-      if (meshEntity == null || rigidBody == null) {
-        return;
-      }
-
       world.stepSimulation(timeSinceLastFrame, 1, 1 / 60);
-      transformManager.updateTransformByRigidBody(meshEntity, rigidBody);
+      for (const { entity, rigidBody } of dicesEntitiesWithRigidBody) {
+        transformManager.updateTransformByRigidBody(entity, rigidBody);
+      }
     },
-    [rigidBody, meshEntity, transformManager, world]
+    [dicesEntitiesWithRigidBody, transformManager, world]
   );
 
   const handleReset = () => {
-    if (!meshEntity || !meshTransform) return;
-
-    if (rigidBody) world.removeRigidBody(rigidBody);
-    const transform = transformManager.getTransform(meshEntity);
-    const resetTransform = transform.translate([0, 3, 0]);
-    const newRigidBody = BulletAPI.createRigidBodyFromTransform(
-      1,
-      resetTransform,
-      boxShape,
-      "dice",
-      undefined
-    );
-    transformManager.setEntityPosition(meshEntity, [0, 3, 0], true);
-    world.addRigidBody(newRigidBody);
-    setRigidBody(newRigidBody);
+    for (const [
+      index,
+      { entity, rigidBody },
+    ] of dicesEntitiesWithRigidBody.entries()) {
+      world.removeRigidBody(rigidBody);
+      transformManager.setEntityPosition(entity, initialPosition[index], false);
+      const resetTransform = transformManager.getTransform(entity);
+      const newRigidBody = BulletAPI.createRigidBodyFromTransform(
+        1,
+        resetTransform,
+        boxShape,
+        "dice",
+        undefined
+      );
+      newRigidBody.activationState = "disable_deactivation";
+      newRigidBody.setDamping(0.0, 0.5);
+      world.addRigidBody(newRigidBody);
+      setDicesEntitiesWithRigidBody((prev) => {
+        const newState = [...prev];
+        newState[index].rigidBody = newRigidBody;
+        return newState;
+      });
+    }
   };
 
   return (
